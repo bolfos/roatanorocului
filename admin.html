@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin – Shaormeria 5 Drumuri</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      background: radial-gradient(circle at top, #1a0000, #000);
+      color: #fff;
+      font-family: 'Montserrat', system-ui, sans-serif;
+      padding: 20px;
+      margin: 0;
+      min-height: 100vh;
+    }
+
+    /* HEADER */
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .header-logo {
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      object-fit: cover;
+      box-shadow: 0 0 20px #ff1a1a;
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      color: #ff1a1a;
+      text-shadow: 0 0 12px #ff1a1a;
+      font-size: 26px;
+      margin-bottom: 5px;
+      letter-spacing: 2px;
+    }
+
+    .sub {
+      text-align: center;
+      font-size: 13px;
+      color: #ff6a00;
+      text-shadow: 0 0 8px #ff6a00;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      margin-bottom: 20px;
+    }
+
+    /* BUTTONS */
+    .top-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 15px;
+    }
+
+    .btn {
+      background: linear-gradient(135deg, #ff1a1a, #ff6a00);
+      padding: 10px 16px;
+      border: none;
+      border-radius: 999px;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 0 12px #ff1a1a;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      white-space: nowrap;
+    }
+
+    .btn:active {
+      transform: scale(0.96);
+    }
+
+    .info {
+      font-size: 13px;
+      color: #ccc;
+    }
+
+    /* TABLE */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      background: rgba(20, 0, 0, 0.7);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 0 20px #ff1a1a33;
+    }
+
+    th, td {
+      border: 1px solid #ff1a1a55;
+      padding: 10px;
+      text-align: left;
+      font-size: 13px;
+    }
+
+    th {
+      background: rgba(255, 26, 26, 0.2);
+      color: #ff6a00;
+      text-shadow: 0 0 8px #ff6a00;
+    }
+
+    tr:nth-child(even) {
+      background: rgba(255, 26, 26, 0.05);
+    }
+
+    .status-badge {
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      text-align: center;
+      display: inline-block;
+    }
+
+    .status-badge.claimed {
+      background: rgba(76, 175, 80, 0.2);
+      color: #4caf50;
+      box-shadow: 0 0 8px #4caf50;
+    }
+
+    .status-badge.pending {
+      background: rgba(255, 235, 59, 0.15);
+      color: #ffeb3b;
+      box-shadow: 0 0 8px #ffeb3b;
+    }
+
+    /* RESPONSIVE TABLE */
+    @media (max-width: 768px) {
+      table, thead, tbody, th, td, tr {
+        display: block;
+      }
+
+      thead {
+        display: none;
+      }
+
+      tr {
+        margin-bottom: 10px;
+        border: 1px solid #ff1a1a55;
+        border-radius: 10px;
+        overflow: hidden;
+      }
+
+      td {
+        border: none;
+        border-bottom: 1px solid #ff1a1a33;
+        position: relative;
+        padding-left: 110px;
+      }
+
+      td:last-child {
+        border-bottom: none;
+      }
+
+      td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-weight: 700;
+        color: #ff6a00;
+        font-size: 12px;
+        text-transform: uppercase;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="header">
+    <img src="assets/logo.png" class="header-logo" alt="Logo">
+    <h1>Panou Administrare</h1>
+    <div class="sub">Shaormeria 5 Drumuri – Roata Premiilor</div>
+  </div>
+
+  <div class="top-bar">
+    <button class="btn" onclick="exportCSV()">Exportă CSV</button>
+    <button class="btn" onclick="clearData()">Șterge toate înregistrările</button>
+    <div class="info" id="stats"></div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Cod</th>
+        <th>Premiu</th>
+        <th>Data</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+
+  <script>
+    const data = JSON.parse(localStorage.getItem("prizes") || "[]");
+    const tbody = document.getElementById("tableBody");
+    const statsEl = document.getElementById("stats");
+
+    let claimedCount = 0;
+
+    data.forEach((entry, index) => {
+      if (entry.claimed) claimedCount++;
+
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td data-label="#">${index + 1}</td>
+        <td data-label="Cod">${entry.code}</td>
+        <td data-label="Premiu">${entry.prize}</td>
+        <td data-label="Data">${entry.date}</td>
+        <td data-label="Status">
+          <span class="status-badge ${entry.claimed ? "claimed" : "pending"}">
+            ${entry.claimed ? "Revendicat" : "Nerevendicat"}
+          </span>
+        </td>
+      `;
+      tbody.appendChild(row);
+    });
+
+    statsEl.textContent = `Total premii: ${data.length} | Revendicate: ${claimedCount} | Nerevendicate: ${data.length - claimedCount}`;
+
+    function clearData() {
+      if (confirm("Sigur vrei să ștergi toate înregistrările?")) {
+        localStorage.removeItem("prizes");
+        localStorage.removeItem("csv_export");
+        location.reload();
+      }
+    }
+
+    function exportCSV() {
+      const csv = localStorage.getItem("csv_export");
+
+      if (!csv) {
+        alert("Nu există date de exportat.");
+        return;
+      }
+
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "premii_shaormeria5drumuri.csv";
+      link.click();
+
+      URL.revokeObjectURL(url);
+    }
+  </script>
+
+</body>
+</html>

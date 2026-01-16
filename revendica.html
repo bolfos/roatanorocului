@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <title>Revendicare Premiu – Shaormeria 5 Drumuri</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      background: radial-gradient(circle at top, #1a0000, #000);
+      color: #fff;
+      font-family: 'Montserrat', system-ui, sans-serif;
+      text-align: center;
+      padding: 40px 20px;
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .header-logo {
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      object-fit: cover;
+      box-shadow: 0 0 20px #ff1a1a;
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      color: #ff1a1a;
+      text-shadow: 0 0 12px #ff1a1a;
+      font-size: 28px;
+      margin-bottom: 10px;
+      letter-spacing: 2px;
+    }
+
+    .sub {
+      font-size: 13px;
+      color: #ff6a00;
+      text-shadow: 0 0 8px #ff6a00;
+      margin-bottom: 20px;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+    }
+
+    .box {
+      background: rgba(20, 0, 0, 0.7);
+      border: 1px solid #ff1a1a55;
+      border-radius: 14px;
+      padding: 20px;
+      max-width: 420px;
+      width: 100%;
+      margin: auto;
+      box-shadow: 0 0 22px #ff1a1a33;
+      backdrop-filter: blur(8px);
+    }
+
+    .label {
+      font-size: 14px;
+      color: #ff6a00;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 10px;
+    }
+
+    .value {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .status {
+      font-size: 16px;
+      margin-top: 10px;
+      text-shadow: 0 0 10px #ffeb3b;
+    }
+
+    .status.claimed {
+      color: #4caf50;
+      text-shadow: 0 0 10px #4caf50;
+    }
+
+    .status.pending {
+      color: #ffeb3b;
+    }
+
+    .btn {
+      background: linear-gradient(135deg, #ff1a1a, #ff6a00);
+      padding: 12px 20px;
+      border: none;
+      border-radius: 999px;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 20px;
+      box-shadow: 0 0 14px #ff1a1a;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .btn:active {
+      transform: scale(0.96);
+    }
+
+    .error {
+      color: #ff6a6a;
+      text-shadow: 0 0 10px #ff1a1a;
+      font-size: 16px;
+    }
+
+    @media (max-width: 480px) {
+      h1 { font-size: 22px; }
+      .box { padding: 16px; }
+      .value { font-size: 16px; }
+      .btn { width: 100%; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <img src="assets/logo.png" class="header-logo" alt="Logo">
+
+  <h1>Revendicare Premiu</h1>
+  <div class="sub">Shaormeria 5 Drumuri</div>
+
+  <div id="content" class="box"></div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("cod");
+
+    const data = JSON.parse(localStorage.getItem("prizes") || "[]");
+    const entry = data.find(x => x.code === code);
+
+    const content = document.getElementById("content");
+
+    if (!entry) {
+      content.innerHTML = `
+        <p class="error">Cod invalid sau inexistent.</p>
+        <p>Verifică dacă ai scanat corect codul QR.</p>
+      `;
+    } else {
+      const statusClass = entry.claimed ? "status claimed" : "status pending";
+      const statusText = entry.claimed ? "Revendicat" : "Nerevendicat";
+
+      content.innerHTML = `
+        <div class="label">Cod premiu</div>
+        <div class="value">${entry.code}</div>
+
+        <div class="label">Premiu</div>
+        <div class="value">${entry.prize}</div>
+
+        <div class="${statusClass}"><strong>Status:</strong> ${statusText}</div>
+
+        ${entry.claimed ? "" : `<button class="btn" onclick="claim()">Marchează ca revendicat</button>`}
+      `;
+    }
+
+    function claim() {
+      entry.claimed = true;
+      localStorage.setItem("prizes", JSON.stringify(data));
+      location.reload();
+    }
+  </script>
+
+</body>
+</html>
